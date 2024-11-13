@@ -76,15 +76,13 @@ runs:
       uses: peter-evans/create-pull-request@v6
       with:
         token: ${{ inputs.githubToken }}
-        title: "chore: sync changes from ${{ inputs.baseBranch }} to ${{ inputs.targetBranch }}${{ env.CONFLICTS == 'true' && ' (🚨 CAUTION: conflicts resolved using base branch)' || '' }}"
+        title: "${{ env.PREFIX }}: sync changes from ${{ inputs.baseBranch }} to ${{ inputs.targetBranch }}${{ env.CONFLICTS == 'true' && ' (🚨 CAUTION: conflicts resolved using base branch)' || '' }}"
         body: |
           This PR syncs changes from the ${{ inputs.baseBranch }} branch to ${{ inputs.targetBranch }}.
-          ${{ env.CONFLICTS == 'true' && '🚨🚨🚨 **BE CAREFUL BEFORE MERGING**: There were conflicts that were automatically resolved using changes from base branch.' || '' }}
 
-          This is an automated PR created by GitHub Actions.
+          ${{ env.CONFLICTS == 'true' && '🚨🚨🚨 **BE CAREFUL BEFORE MERGING**: There were conflicts that were automatically resolved using changes from base branch.' || '' }}
         commit-message: |
           ${{ env.PREFIX }}: sync changes from ${{ inputs.baseBranch }} to ${{ inputs.targetBranch }}
 
           ${{ env.BREAKING_CHANGE }}
-          base: ${{ inputs.targetBranch }}
         branch: ${{ env.SYNC_BRANCH }}
