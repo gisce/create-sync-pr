@@ -80,7 +80,8 @@ runs:
         body: |
           This PR syncs changes from the ${{ inputs.baseBranch }} branch to ${{ inputs.targetBranch }}.
 
-          ${{ env.CONFLICTS == 'true' && '🚨🚨🚨 **BE CAREFUL BEFORE MERGING**: There were conflicts that were automatically resolved using changes from base branch.' || '' }}
+          ${{ env.CONFLICTS == 'true' && '🚨🚨🚨 **BE CAREFUL BEFORE MERGING** 🚨🚨🚨
+          There were conflicts that were automatically resolved using changes from base branch.' || '' }}
         commit-message: |
           ${{ env.PREFIX }}: sync changes from ${{ inputs.baseBranch }} to ${{ inputs.targetBranch }}
 
