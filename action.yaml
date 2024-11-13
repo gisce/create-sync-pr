@@ -66,6 +66,8 @@ runs:
           PREFIX="feat"
           BREAKING_CHANGE="BREAKING CHANGE: bump major version"
           echo "BREAKING_CHANGE=$BREAKING_CHANGE" >> $GITHUB_ENV
+        elif [[ "$RELEASE_TYPE" == "none" ]]; then
+          PREFIX="chore"
         fi
         echo "PREFIX=$PREFIX" >> $GITHUB_ENV
       shell: bash
