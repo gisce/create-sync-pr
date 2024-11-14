@@ -76,7 +76,7 @@ runs:
       uses: peter-evans/create-pull-request@v6
       with:
         token: ${{ inputs.githubToken }}
-        title: "${{ env.PREFIX }}: sync changes from ${{ inputs.baseBranch }} to ${{ inputs.targetBranch }}${{ env.CONFLICTS == 'true' && ' (🚨 CAUTION: conflicts resolved using base branch)' || '' }}"
+        title: "${{ env.PREFIX }}: sync changes from ${{ inputs.baseBranch }} to ${{ inputs.targetBranch }}${{ env.CONFLICTS == 'true' && ' (🚨 CONFLICTS RESOLVED)' || '' }}"
         body: |
           This PR syncs changes from the ${{ inputs.baseBranch }} branch to ${{ inputs.targetBranch }}.
 
