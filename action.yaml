@@ -23,7 +23,6 @@ runs:
     - name: Checkout repository
       uses: actions/checkout@v3
       with:
-        fetch-depth: 0
         ref: ${{ inputs.targetBranch }}
 
     - name: Configure Git
@@ -42,7 +41,6 @@ runs:
         # Create sync branch from current position
         sync_branch="sync/${{ inputs.baseBranch }}-to-${{ inputs.targetBranch }}-$(date +%Y%m%d-%H%M%S)"
         echo "SYNC_BRANCH=$sync_branch" >> $GITHUB_ENV
-        git checkout -b "$sync_branch"
 
         # Ensure we have the latest state of both branches
         git branch --track ${{ inputs.baseBranch }} origin/${{ inputs.baseBranch }} || true
@@ -94,3 +92,4 @@ runs:
 
           ${{ env.BREAKING_CHANGE }}
         branch: ${{ env.SYNC_BRANCH }}
+        base: ${{ inputs.targetBranch }}
