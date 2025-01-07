@@ -41,12 +41,13 @@ runs:
         sync_branch="sync/${{ inputs.baseBranch }}-to-${{ inputs.targetBranch }}-$(date +%Y%m%d-%H%M%S)"
         echo "SYNC_BRANCH=$sync_branch" >> $GITHUB_ENV
 
-        # Try to merge, if conflicts occur resolve using base branch (theirs)
-        if ! git merge origin/${{ inputs.baseBranch }} --no-edit --no-verify --no-commit; then
-          git merge --abort
-          git merge origin/${{ inputs.baseBranch }} -X theirs --no-edit --no-verify --no-commit
+        # First try a dry-run merge to detect conflicts
+        if git merge-tree $(git merge-base HEAD origin/${{ inputs.baseBranch }}) HEAD origin/${{ inputs.baseBranch }} | grep -q "^<<<<<<< "; then
           echo "CONFLICTS=true" >> $GITHUB_ENV
         fi
+
+        # Perform the actual merge with conflict resolution
+        git merge origin/${{ inputs.baseBranch }} -X theirs --no-edit --no-verify --no-commit
 
         # Check if there are any changes to commit
         if [ -z "$(git status --porcelain)" ]; then
