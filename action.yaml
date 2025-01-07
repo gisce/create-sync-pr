@@ -35,11 +35,17 @@ runs:
     - name: Create sync branch and merge
       shell: bash
       run: |
-        git fetch origin
+        # Fetch all branches and tags
+        git fetch origin --prune --unshallow || git fetch origin
+        git fetch origin ${{ inputs.baseBranch }}:refs/remotes/origin/${{ inputs.baseBranch }}
 
         # Create sync branch from current position
         sync_branch="sync/${{ inputs.baseBranch }}-to-${{ inputs.targetBranch }}-$(date +%Y%m%d-%H%M%S)"
         echo "SYNC_BRANCH=$sync_branch" >> $GITHUB_ENV
+        git checkout -b "$sync_branch"
+
+        # Ensure we have the latest state of both branches
+        git branch --track ${{ inputs.baseBranch }} origin/${{ inputs.baseBranch }} || true
 
         # First try a dry-run merge to detect conflicts
         if git merge-tree $(git merge-base HEAD origin/${{ inputs.baseBranch }}) HEAD origin/${{ inputs.baseBranch }} | grep -q "^<<<<<<< "; then
