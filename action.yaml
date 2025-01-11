@@ -41,8 +41,7 @@ runs:
 
         # Fetch all branches
         git fetch origin --unshallow || true
-        git fetch origin ${{ inputs.targetBranch }}:${{ inputs.targetBranch }} --force
-        git fetch origin ${{ inputs.baseBranch }}:${{ inputs.baseBranch }} --force
+        git fetch origin ${{ inputs.baseBranch }}
 
         # Create and checkout the sync branch FROM targetBranch
         git checkout ${{ inputs.targetBranch }}
