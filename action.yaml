@@ -130,8 +130,8 @@ runs:
 
         # Create PR using gh cli
         gh pr create \
-          --title "$PR_TITLE" \
-          --body "$PR_BODY" \
+          --title "${PR_TITLE}" \
+          --body "${PR_BODY}" \
           --base "${{ inputs.targetBranch }}" \
           --head "${{ env.SYNC_BRANCH }}" \
-          --repo "${{ inputs.repository }}"
+          --repo "gisce/${{ inputs.repository }}"
