@@ -42,6 +42,9 @@ runs:
         sync_branch="sync/${{ inputs.baseBranch }}-to-${{ inputs.targetBranch }}-$(date +%Y%m%d-%H%M%S)"
         echo "SYNC_BRANCH=$sync_branch" >> $GITHUB_ENV
 
+        # Create and checkout the sync branch
+        git checkout -b $sync_branch
+
         # Ensure we have the latest state of both branches
         git branch --track ${{ inputs.baseBranch }} origin/${{ inputs.baseBranch }} || true
 
