@@ -43,29 +43,44 @@ runs:
         git fetch origin --unshallow || true
         git fetch origin ${{ inputs.baseBranch }}
 
+        echo "Creating sync branch $sync_branch from ${{ inputs.targetBranch }}"
         # Create and checkout the sync branch FROM targetBranch
         git checkout ${{ inputs.targetBranch }}
         git checkout -b $sync_branch
+
+        echo "Current branch for merge: $(git branch --show-current)"
 
         # First try a dry-run merge to detect conflicts
         if git merge-tree $(git merge-base HEAD origin/${{ inputs.baseBranch }}) HEAD origin/${{ inputs.baseBranch }} | grep -q "^<<<<<<< "; then
           echo "CONFLICTS=true" >> $GITHUB_ENV
         fi
 
+        echo "Merging ${{ inputs.baseBranch }} into sync branch"
         # Perform the actual merge with conflict resolution
         git merge origin/${{ inputs.baseBranch }} -X theirs --no-edit --no-verify
 
         # Check if there are any changes to commit
         if [ -z "$(git status --porcelain)" ]; then
           echo "No changes to sync - working tree clean"
-          git push origin $sync_branch --tags
           exit 0
         else
           # Commit any remaining changes from the merge
           git add .
           git commit --no-edit --no-verify
-          git push origin $sync_branch --tags
         fi
+
+    - name: Push sync branch
+      shell: bash
+      run: |
+        echo "Pushing branch: ${{ env.SYNC_BRANCH }}"
+        echo "Current git status:"
+        git status
+        echo "Current branch:"
+        git branch --show-current
+        echo "Commits to be pushed:"
+        git log origin/${{ inputs.targetBranch }}..HEAD --oneline
+        echo "Attempting push with tags..."
+        git push origin ${{ env.SYNC_BRANCH }} --tags -v
 
     - name: Determine Commit Message
       id: commit-message
