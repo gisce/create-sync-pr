@@ -51,13 +51,15 @@ runs:
         fi
 
         # Perform the actual merge with conflict resolution
-        git merge origin/${{ inputs.baseBranch }} -X theirs --no-edit --no-verify --no-commit
+        git merge origin/${{ inputs.baseBranch }} -X theirs --no-edit --no-verify
 
         # Check if there are any changes to commit
         if [ -z "$(git status --porcelain)" ]; then
           echo "No changes to sync - working tree clean"
           exit 0
         fi
+
+        git push origin HEAD --tags --force
 
     - name: Determine Commit Message
       id: commit-message
