@@ -50,6 +50,9 @@ runs:
         # Store current commit for comparison
         BEFORE_MERGE=$(git rev-parse HEAD)
 
+        # Get the tree hash before merge
+        BEFORE_TREE=$(git rev-parse HEAD^{tree})
+
         echo "Current branch for merge: $(git branch --show-current)"
 
         # First try a dry-run merge to detect conflicts
@@ -61,11 +64,11 @@ runs:
         # Perform the actual merge with conflict resolution
         git merge origin/${{ inputs.baseBranch }} -X theirs --no-edit --no-verify
 
-        # Store after-merge commit
-        AFTER_MERGE=$(git rev-parse HEAD)
+        # Get the tree hash after merge
+        AFTER_TREE=$(git rev-parse HEAD^{tree})
 
-        # Check if merge resulted in changes
-        if [ "$BEFORE_MERGE" = "$AFTER_MERGE" ]; then
+        # Check if the actual content changed
+        if [ "$BEFORE_TREE" = "$AFTER_TREE" ]; then
           echo "No changes from merge - branches are already in sync"
           echo "HAS_CHANGES=false" >> $GITHUB_ENV
           exit 0
@@ -75,6 +78,7 @@ runs:
         fi
 
     - name: Push sync branch
+      if: env.HAS_CHANGES == 'true'
       shell: bash
       run: |
         echo "Pushing branch: ${{ env.SYNC_BRANCH }}"
@@ -106,18 +110,39 @@ runs:
         echo "PREFIX=$PREFIX" >> $GITHUB_ENV
       shell: bash
 
-    # - name: Create Pull Request
-    #   if: env.HAS_CHANGES == 'true'
-    #   uses: peter-evans/create-pull-request@v6
-    #   with:
-    #     token: ${{ inputs.githubToken }}
-    #     title: "${{ env.PREFIX }}: sync changes from ${{ inputs.baseBranch }} to ${{ inputs.targetBranch }}${{ env.CONFLICTS == 'true' && ' (🚨 CONFLICTS RESOLVED)' || '' }}"
-    #     body: |
-    #       This PR syncs changes from the ${{ inputs.baseBranch }} branch to ${{ inputs.targetBranch }}.
-    #       ${{ env.CONFLICTS == 'true' && '# 🚨 **BE CAREFUL BEFORE MERGING**
-    #       There were conflicts that were automatically resolved using changes from base branch.' || '' }}
-    #     commit-message: |
-    #       ${{ env.PREFIX }}: sync changes from ${{ inputs.baseBranch }} to ${{ inputs.targetBranch }}
-    #       ${{ env.BREAKING_CHANGE }}
-    #     branch: ${{ env.SYNC_BRANCH }}
-    #     base: ${{ inputs.targetBranch }}
+    - name: Install GitHub CLI
+      if: env.HAS_CHANGES == 'true'
+      shell: bash
+      run: |
+        type -p curl >/dev/null || (apt update && apt install curl -y)
+        curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
+        && chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg \
+        && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
+        && apt update \
+        && apt install gh -y
+
+    - name: Create Pull Request
+      if: env.HAS_CHANGES == 'true'
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.githubToken }}
+      run: |
+        # Prepare PR title and body
+        PR_TITLE="${{ env.PREFIX }}: sync changes from ${{ inputs.baseBranch }} to ${{ inputs.targetBranch }}${{ env.CONFLICTS == 'true' && ' (🚨 CONFLICTS RESOLVED)' || '' }}"
+
+        if [[ "${{ env.CONFLICTS }}" == "true" ]]; then
+          PR_BODY="This PR syncs changes from the ${{ inputs.baseBranch }} branch to ${{ inputs.targetBranch }}.
+
+        🚨 **BE CAREFUL BEFORE MERGING**
+        There were conflicts that were automatically resolved using changes from base branch."
+        else
+          PR_BODY="This PR syncs changes from the ${{ inputs.baseBranch }} branch to ${{ inputs.targetBranch }}."
+        fi
+
+        # Create PR using gh cli
+        gh pr create \
+          --title "$PR_TITLE" \
+          --body "$PR_BODY" \
+          --base "${{ inputs.targetBranch }}" \
+          --head "${{ env.SYNC_BRANCH }}" \
+          --repo "${{ inputs.repository }}"
