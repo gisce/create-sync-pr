@@ -41,13 +41,12 @@ runs:
 
         # Fetch all branches
         git fetch origin --unshallow || true
+        git fetch origin ${{ inputs.targetBranch }}:${{ inputs.targetBranch }} --force
         git fetch origin ${{ inputs.baseBranch }}:${{ inputs.baseBranch }} --force
 
-        # Create and checkout the sync branch
+        # Create and checkout the sync branch FROM targetBranch
+        git checkout ${{ inputs.targetBranch }}
         git checkout -b $sync_branch
-
-        # Ensure we have the latest state of both branches
-        git branch --track ${{ inputs.baseBranch }} origin/${{ inputs.baseBranch }} || true
 
         # First try a dry-run merge to detect conflicts
         if git merge-tree $(git merge-base HEAD origin/${{ inputs.baseBranch }}) HEAD origin/${{ inputs.baseBranch }} | grep -q "^<<<<<<< "; then
