@@ -56,13 +56,11 @@ runs:
         # Check if there are any changes to commit
         if [ -z "$(git status --porcelain)" ]; then
           echo "No changes to sync - working tree clean"
-          git push origin HEAD --tags --force
           exit 0
         else
           # Commit any remaining changes from the merge
           git add .
           git commit --no-edit --no-verify
-          git push origin HEAD --tags --force
         fi
 
     - name: Determine Commit Message
