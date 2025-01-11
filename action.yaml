@@ -106,18 +106,18 @@ runs:
         echo "PREFIX=$PREFIX" >> $GITHUB_ENV
       shell: bash
 
-    - name: Create Pull Request
-      if: env.HAS_CHANGES == 'true'
-      uses: peter-evans/create-pull-request@v6
-      with:
-        token: ${{ inputs.githubToken }}
-        title: "${{ env.PREFIX }}: sync changes from ${{ inputs.baseBranch }} to ${{ inputs.targetBranch }}${{ env.CONFLICTS == 'true' && ' (🚨 CONFLICTS RESOLVED)' || '' }}"
-        body: |
-          This PR syncs changes from the ${{ inputs.baseBranch }} branch to ${{ inputs.targetBranch }}.
-          ${{ env.CONFLICTS == 'true' && '# 🚨 **BE CAREFUL BEFORE MERGING**
-          There were conflicts that were automatically resolved using changes from base branch.' || '' }}
-        commit-message: |
-          ${{ env.PREFIX }}: sync changes from ${{ inputs.baseBranch }} to ${{ inputs.targetBranch }}
-          ${{ env.BREAKING_CHANGE }}
-        branch: ${{ env.SYNC_BRANCH }}
-        base: ${{ inputs.targetBranch }}
+    # - name: Create Pull Request
+    #   if: env.HAS_CHANGES == 'true'
+    #   uses: peter-evans/create-pull-request@v6
+    #   with:
+    #     token: ${{ inputs.githubToken }}
+    #     title: "${{ env.PREFIX }}: sync changes from ${{ inputs.baseBranch }} to ${{ inputs.targetBranch }}${{ env.CONFLICTS == 'true' && ' (🚨 CONFLICTS RESOLVED)' || '' }}"
+    #     body: |
+    #       This PR syncs changes from the ${{ inputs.baseBranch }} branch to ${{ inputs.targetBranch }}.
+    #       ${{ env.CONFLICTS == 'true' && '# 🚨 **BE CAREFUL BEFORE MERGING**
+    #       There were conflicts that were automatically resolved using changes from base branch.' || '' }}
+    #     commit-message: |
+    #       ${{ env.PREFIX }}: sync changes from ${{ inputs.baseBranch }} to ${{ inputs.targetBranch }}
+    #       ${{ env.BREAKING_CHANGE }}
+    #     branch: ${{ env.SYNC_BRANCH }}
+    #     base: ${{ inputs.targetBranch }}
