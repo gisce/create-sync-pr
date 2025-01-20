@@ -134,4 +134,4 @@ runs:
           --body "${PR_BODY}" \
           --base "${{ inputs.targetBranch }}" \
           --head "${{ env.SYNC_BRANCH }}" \
-          --repo "gisce/${{ inputs.repository }}"
+          --repo "${{ inputs.repository }}"
